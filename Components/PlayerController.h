@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ScarlEnt/RTTI/Rtti.h>
-#include <ScarletMath/Math.h>
 
 namespace Scarlet::Component
 {

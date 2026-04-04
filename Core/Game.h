@@ -4,10 +4,6 @@
 
 #include "Defines.h"
 
-#ifdef DEV_CONFIGURATION
-#include "Components/Generated/Register.generated.h"
-#endif // DEV_CONFIGURATION
-
 class GAME_API Game : public Scarlet::IGame
 {
 public:
@@ -17,8 +13,5 @@ public:
 
 extern "C" inline GAME_API Scarlet::IGame* CreateGameInstance() 
 {
-#ifdef DEV_CONFIGURATION
-    Register::RegisterComponents();
-#endif // DEV_CONFIGURATION
     return new Game();
 }

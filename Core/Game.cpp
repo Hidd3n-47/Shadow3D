@@ -4,12 +4,18 @@
 
 #include "Scenes/GameScene.h"
 
-#ifndef DEV_CONFIGURATION
+#ifdef DEV_CONFIGURATION
+#include "Components/Generated/Register.generated.h"
+#else // DEV_CONFIGURATION
 #include "Build/SceneBuild.h"
-#endif // DEV_CONFIGURATION.
+#endif // !DEV_CONFIGURATION.
 
 void Game::Init()
 {
+#ifdef DEV_CONFIGURATION
+    Register::RegisterComponents();
+#endif // DEV_CONFIGURATION
+
     ScarlEnt::Registry& registry = ScarlEnt::Registry::Instance();
 
     // Initialise and register scenes.

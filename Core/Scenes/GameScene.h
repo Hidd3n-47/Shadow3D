@@ -13,7 +13,12 @@
 
 #include <ScarletCoreEcs/Components/Camera.h>
 #include <ScarletCoreEcs/Components/Transform.h>
+#include <ScarletCoreEcs/Components/StaticMesh.h>
 #include <ScarletCoreEcs/Components/DirectionLight.h>
+
+#include "Components/DroneSpawner.h"
+#include "Components/DroneController.h"
+#include "Components/PlayerController.h"
 
 class GameScene : public ScarlEnt::Scene
 {
@@ -25,19 +30,19 @@ public:
         // Register the engine systems. Leave this for default engine systems such as rendering, physics etc..
         Scarlet::Engine::Instance().RegisterEngineSystems(Scarlet::WeakHandle<Scene>{ this });
 
-        mCameraEntity = AddMutableEntity();
+        mPlayerEntity = AddMutableEntity();
 #ifdef DEV_CONFIGURATION
-        auto& info     = mCameraEntity.AddComponent<Scarlet::Component::EditorInfo>();
+        auto& info     = mPlayerEntity.AddComponent<Scarlet::Component::EditorInfo>();
         info.isMutable = true;
         info.name      = "PlayerEntity";
 #endif // DEV_CONFIGURATION.
-        mCameraEntity.AddComponent<Scarlet::Component::Transform>();
-        mCameraEntity.AddComponent<Scarlet::Component::Camera>();
-        mCameraEntity.AddComponent<Scarlet::Component::DirectionLight>();
-        auto& pc = mCameraEntity.AddComponent<Scarlet::Component::PlayerController>();
+        mPlayerEntity.AddComponent<Scarlet::Component::Transform>();
+        mPlayerEntity.AddComponent<Scarlet::Component::Camera>();
+        mPlayerEntity.AddComponent<Scarlet::Component::DirectionLight>();
+        auto& pc = mPlayerEntity.AddComponent<Scarlet::Component::PlayerController>();
         pc.speed = 0.05f;
 
-        SetCameraEntityHandle(&mCameraEntity);
+        SetCameraEntityHandle(&mPlayerEntity);
 
         auto PlayerControllerSystem = [] (Scarlet::Component::Transform& transform, Scarlet::Component::Camera& camera, Scarlet::Component::PlayerController& controller)
         {
@@ -76,14 +81,46 @@ public:
             camera.dirty = true;
         };
 
+        auto MoveDroneSystem = [&](Scarlet::Component::Transform& transform, const Scarlet::Component::DroneController& controller)
+        {
+            const Scarlet::Math::Vec3 playerPosition = mPlayerEntity.GetComponent<Scarlet::Component::Transform>().translation;
+            const Scarlet::Math::Vec3 direction      = Scarlet::Math::Normalize(playerPosition - transform.translation);
+
+            transform.translation += direction * controller.speed;
+        };
+
+        auto SpawnDroneSystem = [&] (const Scarlet::Component::Transform& transform, Scarlet::Component::DroneSpawner& droneSpawner)
+        {
+            droneSpawner.currentTimer -= 0.01f;
+
+            if (droneSpawner.currentTimer <= 0.0f)
+            {
+                Scarlet::Component::Transform t = transform;
+                t.scale = Scarlet::Math::Vec3{ 0.5f };
+
+                Scarlet::Component::StaticMesh sm;
+                sm.mesh     = Scarlet::AssetRef{ Scarlet::AssetType::MESH    , 34764804665973553 };
+                sm.material = Scarlet::AssetRef{ Scarlet::AssetType::MATERIAL, 34775035533044079 };
+
+                Scarlet::Component::DroneController dc;
+                dc.speed = 0.02f;
+
+                auto entity = AddEntity<Scarlet::Component::Transform, Scarlet::Component::StaticMesh, Scarlet::Component::DroneController>(std::move(t), std::move(sm), std::move(dc));
+
+                droneSpawner.currentTimer = droneSpawner.spawnCooldown;
+            }
+        };
+
         RegisterSystem<Scarlet::Component::Transform, Scarlet::Component::Camera, Scarlet::Component::PlayerController>(PlayerControllerSystem);
+        RegisterSystem<Scarlet::Component::Transform, Scarlet::Component::DroneController>(MoveDroneSystem);
+        RegisterSystem<Scarlet::Component::Transform, Scarlet::Component::DroneSpawner>(SpawnDroneSystem);
     }
 
     inline void Destroy() override
     {
-        mCameraEntity.DestroyEntity();
+        mPlayerEntity.DestroyEntity();
     }
 private:
-    ScarlEnt::MutableEntityHandle mCameraEntity;
+    ScarlEnt::MutableEntityHandle mPlayerEntity;
 };
 

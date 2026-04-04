@@ -5,13 +5,45 @@
 			<isMutable type="bool">true</isMutable>
 		</Component>
 		<Component typeId="Transform">
-			<translation type="vec3">0.000000,0.000000,-1.000000</translation>
+			<translation type="vec3">0.000000,0.000000,-1.500000</translation>
 			<rotation type="vec3">0.000000,0.000000,0.000000</rotation>
 			<scale type="vec3">30.000000,30.000000,1.000000</scale>
 		</Component>
 		<Component typeId="StaticMesh">
 			<mesh type="asset">0,0</mesh>
 			<material type="asset">2,33630958529845530</material>
+		</Component>
+	</Entity>
+	<Entity>
+		<Component typeId="EditorInfo">
+			<name type="string">Entity</name>
+			<isMutable type="bool">true</isMutable>
+		</Component>
+		<Component typeId="Transform">
+			<translation type="vec3">0.000000,20.000000,3.427994</translation>
+			<rotation type="vec3">0.000000,0.000000,0.000000</rotation>
+			<scale type="vec3">0.500000,0.500000,0.500000</scale>
+		</Component>
+		<Component typeId="StaticMesh">
+			<mesh type="asset">0,34764804665973553</mesh>
+			<material type="asset">2,34775035533044079</material>
+		</Component>
+		<Component typeId="DroneController">
+			<speed type="float">0.010000</speed>
+		</Component>
+	</Entity>
+	<Entity>
+		<Component typeId="EditorInfo">
+			<name type="string">DroneSpawner</name>
+			<isMutable type="bool">true</isMutable>
+		</Component>
+		<Component typeId="Transform">
+			<translation type="vec3">-13.000000,13.000000,2.000000</translation>
+			<rotation type="vec3">0.000000,0.000000,0.000000</rotation>
+			<scale type="vec3">1.000000,1.000000,1.000000</scale>
+		</Component>
+		<Component typeId="DroneSpawner">
+			<spawnCooldown type="float">2.000000</spawnCooldown>
 		</Component>
 	</Entity>
 </ScarletScene>

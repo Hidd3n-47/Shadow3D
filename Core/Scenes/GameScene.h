@@ -2,9 +2,9 @@
 
 #include <ScarlEnt/Scene.h>
 
-#include <ScarletEngine/Core/Engine.h>
+#include <ScarletMath/Trig.h>
 
-#include <ScarletEngine/Core/Time.h>
+#include <ScarletEngine/Core/Engine.h>
 
 #include <ScarletEngine/Core/Input/KeyCodes.h>
 #include <ScarletEngine/Core/Input/InputManager.h>
@@ -16,6 +16,7 @@
 #include <ScarletCoreEcs/Components/Camera.h>
 #include <ScarletCoreEcs/Components/Transform.h>
 #include <ScarletCoreEcs/Components/StaticMesh.h>
+#include <ScarletCoreEcs/Components/SphereCollider.h>
 #include <ScarletCoreEcs/Components/DirectionLight.h>
 
 #include "Components/Bullet.h"
@@ -43,11 +44,11 @@ public:
         mPlayerEntity.AddComponent<Scarlet::Component::Camera>();
         mPlayerEntity.AddComponent<Scarlet::Component::DirectionLight>();
         auto& pc = mPlayerEntity.AddComponent<Scarlet::Component::PlayerController>();
-        pc.speed = 0.05f;
+        pc.speed = 0.125f;
 
         SetCameraEntityHandle(&mPlayerEntity);
 
-        auto PlayerControllerSystem = [] (Scarlet::Component::Transform& transform, Scarlet::Component::Camera& camera, Scarlet::Component::PlayerController& controller)
+        auto PlayerControllerSystem = [] (Scarlet::Component::Transform& transform, Scarlet::Component::Camera& camera, const Scarlet::Component::PlayerController& controller)
         {
             Scarlet::Math::Vec3 horizontalDirection = { }, forwardDirection = { };
 
@@ -89,7 +90,11 @@ public:
             const Scarlet::Math::Vec3 playerPosition = mPlayerEntity.GetComponent<Scarlet::Component::Transform>().translation;
             const Scarlet::Math::Vec3 direction      = Scarlet::Math::Normalize(playerPosition - transform.translation);
 
+            const float yaw   = Scarlet::Math::Degrees(static_cast<float>(Scarlet::Math::Trig::Atan2(direction.x, direction.y)));
+            const float pitch = Scarlet::Math::Degrees(static_cast<float>(Scarlet::Math::Trig::Atan2(direction.z, sqrt(direction.x * direction.x + direction.y * direction.y))));
+
             transform.translation += direction * controller.speed;
+            transform.rotation     = Scarlet::Math::Vec3{ pitch, 0.0f, yaw };
         };
 
         auto SpawnDroneSystem = [&] (const Scarlet::Component::Transform& transform, Scarlet::Component::DroneSpawner& droneSpawner)
@@ -98,17 +103,23 @@ public:
 
             if (droneSpawner.currentTimer <= 0.0f)
             {
-                Scarlet::Component::Transform t = transform;
-                t.scale = Scarlet::Math::Vec3{ 0.5f };
+                Scarlet::Component::Transform t{};
+                t.translation = transform.translation;
+                t.rotation    = Scarlet::Math::Vec3{ 0.0f };
+                t.scale       = Scarlet::Math::Vec3{ 0.5f };
 
                 Scarlet::Component::StaticMesh sm;
                 sm.mesh     = Scarlet::AssetRef{ Scarlet::AssetType::MESH    , 34764804665973553 };
                 sm.material = Scarlet::AssetRef{ Scarlet::AssetType::MATERIAL, 34775035533044079 };
 
                 Scarlet::Component::DroneController dc;
-                dc.speed = 0.02f;
+                dc.speed = 0.1f;
 
-                auto entity = AddEntity<Scarlet::Component::Transform, Scarlet::Component::StaticMesh, Scarlet::Component::DroneController>(std::move(t), std::move(sm), std::move(dc));
+                Scarlet::Component::SphereCollider sphere;
+                sphere.radius = 1.25f;
+
+                auto entity = AddEntity<Scarlet::Component::Transform, Scarlet::Component::StaticMesh, Scarlet::Component::DroneController, Scarlet::Component::SphereCollider>
+                                    (std::move(t), std::move(sm), std::move(dc), std::move(sphere));
 
                 droneSpawner.currentTimer = droneSpawner.spawnCooldown;
             }

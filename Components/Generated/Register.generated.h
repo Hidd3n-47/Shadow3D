@@ -3,6 +3,7 @@
 #include <ScarlEnt/Registry.h>
 #include <ScarlEnt/MutableEntityHandle.h>
 
+#include "Components/Bullet.h"
 #include "Components/DroneController.h"
 #include "Components/DroneSpawner.h"
 #include "Components/PlayerController.h"

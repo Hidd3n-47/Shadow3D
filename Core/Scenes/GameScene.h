@@ -4,6 +4,8 @@
 
 #include <ScarletEngine/Core/Engine.h>
 
+#include <ScarletEngine/Core/Time.h>
+
 #include <ScarletEngine/Core/Input/KeyCodes.h>
 #include <ScarletEngine/Core/Input/InputManager.h>
 
@@ -16,6 +18,7 @@
 #include <ScarletCoreEcs/Components/StaticMesh.h>
 #include <ScarletCoreEcs/Components/DirectionLight.h>
 
+#include "Components/Bullet.h"
 #include "Components/DroneSpawner.h"
 #include "Components/DroneController.h"
 #include "Components/PlayerController.h"
@@ -91,7 +94,7 @@ public:
 
         auto SpawnDroneSystem = [&] (const Scarlet::Component::Transform& transform, Scarlet::Component::DroneSpawner& droneSpawner)
         {
-            droneSpawner.currentTimer -= 0.01f;
+            droneSpawner.currentTimer -= static_cast<float>(1.0 / 120.0);
 
             if (droneSpawner.currentTimer <= 0.0f)
             {
@@ -111,9 +114,14 @@ public:
             }
         };
 
-        RegisterSystem<Scarlet::Component::Transform, Scarlet::Component::Camera, Scarlet::Component::PlayerController>(PlayerControllerSystem);
-        RegisterSystem<Scarlet::Component::Transform, Scarlet::Component::DroneController>(MoveDroneSystem);
-        RegisterSystem<Scarlet::Component::Transform, Scarlet::Component::DroneSpawner>(SpawnDroneSystem);
+        auto MoveBulletSystem = [&](Scarlet::Component::Transform& transform, const Scarlet::Component::Bullet& bullet){
+            transform.translation += bullet.direction * bullet.speed;
+        };
+
+        RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::Camera, Scarlet::Component::PlayerController>(PlayerControllerSystem);
+        RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::DroneController>(MoveDroneSystem);
+        RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::DroneSpawner>(SpawnDroneSystem);
+        RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::Bullet>(MoveBulletSystem);
     }
 
     inline void Destroy() override

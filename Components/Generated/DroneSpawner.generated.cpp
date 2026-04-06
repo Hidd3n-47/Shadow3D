@@ -18,6 +18,13 @@ void DroneSpawner::GenerateProperties()
         [this] { return ReflectType::GetStringFromValue(this->spawnCooldown); },
         [this](const std::string_view& stringValue) { ReflectType::SetValueFromString(this->spawnCooldown, stringValue); }
     };
+
+    mProperties["currentTimer"] = ScarlEnt::Property {
+        ScarlEnt::PropertyType::FLOAT,
+        ScarlEnt::Registry::Instance().GetOrRegisterComponentId<DroneSpawner>(),
+        [this] { return ReflectType::GetStringFromValue(this->currentTimer); },
+        [this](const std::string_view& stringValue) { ReflectType::SetValueFromString(this->currentTimer, stringValue); }
+    };
 };
 
 #endif // DEV_CONFIGURATION.

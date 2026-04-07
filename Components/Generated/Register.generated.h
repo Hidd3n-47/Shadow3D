@@ -6,6 +6,7 @@
 #include "Components/Bullet.h"
 #include "Components/DroneController.h"
 #include "Components/DroneSpawner.h"
+#include "Components/Gun.h"
 #include "Components/PlayerController.h"
 
 

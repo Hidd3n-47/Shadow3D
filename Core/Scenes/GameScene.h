@@ -4,6 +4,8 @@
 
 #include <ScarletMath/Trig.h>
 
+#include <ScarletEngine/Core/Time.h>
+
 #include <ScarletEngine/Core/Engine.h>
 
 #include <ScarletEngine/Core/Input/KeyCodes.h>
@@ -19,6 +21,7 @@
 #include <ScarletCoreEcs/Components/SphereCollider.h>
 #include <ScarletCoreEcs/Components/DirectionLight.h>
 
+#include "Components/Gun.h"
 #include "Components/Bullet.h"
 #include "Components/DroneSpawner.h"
 #include "Components/DroneController.h"
@@ -43,7 +46,8 @@ public:
         mPlayerEntity.AddComponent<Scarlet::Component::Transform>();
         mPlayerEntity.AddComponent<Scarlet::Component::Camera>();
         mPlayerEntity.AddComponent<Scarlet::Component::DirectionLight>();
-        auto& pc = mPlayerEntity.AddComponent<Scarlet::Component::PlayerController>();
+        mPlayerEntity.AddComponent<Scarlet::Component::Gun>();
+        Scarlet::Component::PlayerController& pc = mPlayerEntity.AddComponent<Scarlet::Component::PlayerController>();
         pc.speed = 0.125f;
 
         SetCameraEntityHandle(&mPlayerEntity);
@@ -85,6 +89,52 @@ public:
             camera.dirty = true;
         };
 
+        auto PlayerGunSystem = [&](const Scarlet::Component::Transform& transform, const Scarlet::Component::Camera& camera, Scarlet::Component::Gun& gun)
+        {
+            if (gun.reloadTimer > 0.0f)
+            {
+                // We are reloading.
+                gun.reloadTimer -= static_cast<float>(Scarlet::Time::GetFixedFrameDelta());
+
+                if (gun.reloadTimer <= 0.0f)
+                {
+                    gun.reloadTimer = 0.0f;
+                    gun.currentMagSize = gun.magSize;
+                }
+
+                return;
+            }
+
+            if (Scarlet::InputManager::IsKeyPressed(Scarlet::KeyCode::KEY_R))
+            {
+                gun.reloadTimer = gun.reloadTime;
+                return;
+            }
+
+            if (!Scarlet::InputManager::IsKeyPressed(Scarlet::KeyCode::MOUSE_BUTTON_1) || gun.currentMagSize == 0)
+            {
+                return;
+            }
+
+            --gun.currentMagSize;
+
+            Scarlet::Component::Transform t{};
+            t.translation = transform.translation + camera.forwardVector * 0.6f;
+            t.scale       = Scarlet::Math::Vec3{ 0.1f };
+
+            Scarlet::Component::StaticMesh sm{};
+
+            Scarlet::Component::SphereCollider sphere{};
+
+            Scarlet::Component::Bullet b{};
+            b.speed     = 1.0f;
+            b.damage    = gun.damage;
+            b.direction = camera.forwardVector;
+
+            (void)AddEntity<Scarlet::Component::Transform, Scarlet::Component::StaticMesh, Scarlet::Component::SphereCollider, Scarlet::Component::Bullet>
+                        (std::move(t), std::move(sm), std::move(sphere), std::move(b));
+        };
+
         auto MoveDroneSystem = [&](Scarlet::Component::Transform& transform, const Scarlet::Component::DroneController& controller)
         {
             const Scarlet::Math::Vec3 playerPosition = mPlayerEntity.GetComponent<Scarlet::Component::Transform>().translation;
@@ -99,7 +149,7 @@ public:
 
         auto SpawnDroneSystem = [&] (const Scarlet::Component::Transform& transform, Scarlet::Component::DroneSpawner& droneSpawner)
         {
-            droneSpawner.currentTimer -= static_cast<float>(1.0 / 120.0);
+            droneSpawner.currentTimer -= static_cast<float>(Scarlet::Time::GetFixedFrameDelta());
 
             if (droneSpawner.currentTimer <= 0.0f)
             {
@@ -133,6 +183,8 @@ public:
         RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::DroneController>(MoveDroneSystem);
         RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::DroneSpawner>(SpawnDroneSystem);
         RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::Bullet>(MoveBulletSystem);
+
+        RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::Camera, Scarlet::Component::Gun>(PlayerGunSystem);
     }
 
     inline void Destroy() override

@@ -9,6 +9,7 @@ void Register::RegisterComponents()
     RegisterComponentTypeAndFunctionPointer<Scarlet::Component::Bullet>(registry);
     RegisterComponentTypeAndFunctionPointer<Scarlet::Component::DroneController>(registry);
     RegisterComponentTypeAndFunctionPointer<Scarlet::Component::DroneSpawner>(registry);
+    RegisterComponentTypeAndFunctionPointer<Scarlet::Component::Gun>(registry);
     RegisterComponentTypeAndFunctionPointer<Scarlet::Component::PlayerController>(registry);
 
 }
@@ -20,6 +21,7 @@ void Register::UnregisterComponents()
     UnregisterComponentType<Scarlet::Component::Bullet>(registry);
     UnregisterComponentType<Scarlet::Component::DroneController>(registry);
     UnregisterComponentType<Scarlet::Component::DroneSpawner>(registry);
+    UnregisterComponentType<Scarlet::Component::Gun>(registry);
     UnregisterComponentType<Scarlet::Component::PlayerController>(registry);
 
 }

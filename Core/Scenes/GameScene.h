@@ -15,6 +15,7 @@
 #include <ScarletCoreEcs/Components/EditorInfo.h>
 #endif // DEV_CONFIGURATION.
 
+#include <iostream>
 #include <ScarletCoreEcs/Components/Camera.h>
 #include <ScarletCoreEcs/Components/Transform.h>
 #include <ScarletCoreEcs/Components/StaticMesh.h>
@@ -22,10 +23,19 @@
 #include <ScarletCoreEcs/Components/DirectionLight.h>
 
 #include "Components/Gun.h"
+#include "Components/Health.h"
 #include "Components/Bullet.h"
 #include "Components/DroneSpawner.h"
 #include "Components/DroneController.h"
 #include "Components/PlayerController.h"
+
+enum class GameCollisionLayers : uint8
+{
+    DEFAULT = 0,
+    BULLET  = 1,
+    DRONE   = 2,
+    PLAYER  = 3
+};
 
 class GameScene : public ScarlEnt::Scene
 {
@@ -98,8 +108,9 @@ public:
 
                 if (gun.reloadTimer <= 0.0f)
                 {
-                    gun.reloadTimer = 0.0f;
+                    gun.reloadTimer    = 0.0f;
                     gun.currentMagSize = gun.magSize;
+                    std::cout << "Reload Completed" << std::endl;
                 }
 
                 return;
@@ -108,6 +119,7 @@ public:
             if (Scarlet::InputManager::IsKeyPressed(Scarlet::KeyCode::KEY_R))
             {
                 gun.reloadTimer = gun.reloadTime;
+                std::cout << "Reloading..." << std::endl;
                 return;
             }
 
@@ -115,6 +127,7 @@ public:
             {
                 return;
             }
+            std::cout << "Shooting... " << gun.currentMagSize << std::endl;
 
             --gun.currentMagSize;
 
@@ -125,6 +138,7 @@ public:
             Scarlet::Component::StaticMesh sm{};
 
             Scarlet::Component::SphereCollider sphere{};
+            sphere.layer = static_cast<uint32>(GameCollisionLayers::BULLET);
 
             Scarlet::Component::Bullet b{};
             b.speed     = 1.0f;
@@ -167,9 +181,39 @@ public:
 
                 Scarlet::Component::SphereCollider sphere;
                 sphere.radius = 1.25f;
+                sphere.layer  = static_cast<uint32>(GameCollisionLayers::DRONE);
 
-                auto entity = AddEntity<Scarlet::Component::Transform, Scarlet::Component::StaticMesh, Scarlet::Component::DroneController, Scarlet::Component::SphereCollider>
-                                    (std::move(t), std::move(sm), std::move(dc), std::move(sphere));
+                Scarlet::Component::Health hp{};
+
+                auto entity = AddEntity<Scarlet::Component::Transform, Scarlet::Component::StaticMesh, Scarlet::Component::DroneController,
+                                        Scarlet::Component::SphereCollider, Scarlet::Component::Health>
+                              (std::move(t), std::move(sm), std::move(dc), std::move(sphere), std::move(hp));
+
+                Scarlet::Component::SphereCollider& sphereComp = entity.GetComponent<Scarlet::Component::SphereCollider>();
+                sphereComp.onCollisionCallback = [entity] (const uint32 otherLayer) mutable
+                {
+                    if (otherLayer == static_cast<uint32>(GameCollisionLayers::BULLET))
+                    {
+                        Scarlet::Component::Health& health = entity.GetComponent<Scarlet::Component::Health>();
+                        health.health -= 20.0f;
+                        std::cout << entity.GetRuntimeId() << " damaged => " << health.health << std::endl;
+                        if (health.health <= 0.0f && health.onHealthReachZeroCallback)
+                        {
+                            health.onHealthReachZeroCallback();
+                        }
+                    }
+                };
+
+                Scarlet::Component::Health& healthComp = entity.GetComponent<Scarlet::Component::Health>();
+                healthComp.onHealthReachZeroCallback = [entity]() mutable
+                {
+                    auto h = entity.GetComponent<Scarlet::Component::Health>();
+                    std::cout << entity.GetRuntimeId() << " destroyed => " << h.health << std::endl;
+                    if (entity.IsValid())
+                    {
+                        entity.DestroyEntity();
+                    }
+                };
 
                 droneSpawner.currentTimer = droneSpawner.spawnCooldown;
             }

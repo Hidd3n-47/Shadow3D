@@ -7,6 +7,7 @@
 #include "Components/DroneController.h"
 #include "Components/DroneSpawner.h"
 #include "Components/Gun.h"
+#include "Components/Health.h"
 #include "Components/PlayerController.h"
 
 

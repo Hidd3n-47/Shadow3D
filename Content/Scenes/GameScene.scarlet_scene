@@ -28,9 +28,6 @@
 			<mesh type="asset">0,34764804665973553</mesh>
 			<material type="asset">2,34775035533044079</material>
 		</Component>
-		<Component typeId="DroneController">
-			<speed type="float">0.100000</speed>
-		</Component>
 	</Entity>
 	<Entity>
 		<Component typeId="EditorInfo">
@@ -44,7 +41,45 @@
 		</Component>
 		<Component typeId="DroneSpawner">
 			<spawnCooldown type="float">2.000000</spawnCooldown>
-			<currentTimer type="float">2.000000</currentTimer>
+			<currentTimer type="float">1.567999</currentTimer>
+		</Component>
+	</Entity>
+	<Entity>
+		<Component typeId="EditorInfo">
+			<name type="string">PlayerEntity</name>
+			<isMutable type="bool">true</isMutable>
+		</Component>
+		<Component typeId="Transform">
+			<translation type="vec3">32.040501,-93.318550,0.000000</translation>
+			<rotation type="vec3">-13.999996,0.000000,101.250000</rotation>
+			<scale type="vec3">1.000000,1.000000,1.000000</scale>
+		</Component>
+		<Component typeId="Camera">
+			<forwardVector type="vec3">0.951652,-0.189295,0.241922</forwardVector>
+			<rightVector type="vec3">-0.195090,-0.980785,0.000000</rightVector>
+			<nearPlane type="float">0.100000</nearPlane>
+			<upVector type="vec3">-0.237273,0.047197,0.970296</upVector>
+			<farPlane type="float">1000.000000</farPlane>
+			<aspectRatio type="float">1.777778</aspectRatio>
+			<fov type="float">60.000000</fov>
+			<dirty type="bool">false</dirty>
+		</Component>
+		<Component typeId="DirectionLight">
+			<lightColor type="vec3">1.000000,1.000000,1.000000</lightColor>
+			<diffuseIntensity type="float">0.960000</diffuseIntensity>
+			<direction type="vec3">-1.000000,1.000000,-1.000000</direction>
+			<ambientIntensity type="float">0.190000</ambientIntensity>
+			<rimPower type="float">3.400000</rimPower>
+		</Component>
+		<Component typeId="Gun">
+			<reloadTimer type="float">0.000000</reloadTimer>
+			<reloadTime type="float">2.000000</reloadTime>
+			<magSize type="UNKNOWN">12</magSize>
+			<damage type="float">20.000000</damage>
+			<currentMagSize type="UNKNOWN">0</currentMagSize>
+		</Component>
+		<Component typeId="PlayerController">
+			<speed type="float">0.125000</speed>
 		</Component>
 	</Entity>
 </ScarletScene>

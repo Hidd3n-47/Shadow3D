@@ -2,84 +2,148 @@
 	<Entity>
 		<Component typeId="EditorInfo">
 			<name type="string">FloorEntity</name>
-			<isMutable type="bool">true</isMutable>
+			<isMutable type="bool">false</isMutable>
 		</Component>
 		<Component typeId="Transform">
-			<translation type="vec3">0.000000,0.000000,-1.500000</translation>
+			<translation type="vec3">0.000000,35.000000,-1.500000</translation>
 			<rotation type="vec3">0.000000,0.000000,0.000000</rotation>
-			<scale type="vec3">30.000000,30.000000,1.000000</scale>
+			<scale type="vec3">1.000000,1.000000,1.000000</scale>
 		</Component>
 		<Component typeId="StaticMesh">
-			<mesh type="asset">0,0</mesh>
+			<mesh type="asset">0,37310013715408072</mesh>
 			<material type="asset">2,33630958529845530</material>
 		</Component>
 	</Entity>
 	<Entity>
 		<Component typeId="EditorInfo">
-			<name type="string">TestDroneEntity</name>
-			<isMutable type="bool">true</isMutable>
+			<name type="string">DroneSpawnerLeft</name>
+			<isMutable type="bool">false</isMutable>
 		</Component>
 		<Component typeId="Transform">
-			<translation type="vec3">0.000000,20.000000,3.427994</translation>
+			<translation type="vec3">-14.500000,0.500000,2.000000</translation>
 			<rotation type="vec3">0.000000,0.000000,0.000000</rotation>
-			<scale type="vec3">0.500000,0.500000,0.500000</scale>
-		</Component>
-		<Component typeId="StaticMesh">
-			<mesh type="asset">0,34764804665973553</mesh>
-			<material type="asset">2,34775035533044079</material>
-		</Component>
-	</Entity>
-	<Entity>
-		<Component typeId="EditorInfo">
-			<name type="string">DroneSpawner</name>
-			<isMutable type="bool">true</isMutable>
-		</Component>
-		<Component typeId="Transform">
-			<translation type="vec3">-13.000000,13.000000,2.000000</translation>
-			<rotation type="vec3">0.000000,0.000000,0.000000</rotation>
-			<scale type="vec3">1.000000,1.000000,1.000000</scale>
+			<scale type="vec3">0.200000,1.000000,1.000000</scale>
 		</Component>
 		<Component typeId="DroneSpawner">
 			<spawnCooldown type="float">2.000000</spawnCooldown>
-			<currentTimer type="float">1.567999</currentTimer>
+			<currentTimer type="float">0.463997</currentTimer>
+		</Component>
+		<Component typeId="StaticMesh">
+			<mesh type="asset">0,0</mesh>
+			<material type="asset">2,0</material>
 		</Component>
 	</Entity>
 	<Entity>
 		<Component typeId="EditorInfo">
-			<name type="string">PlayerEntity</name>
+			<name type="string">PortalEntity</name>
+			<isMutable type="bool">false</isMutable>
+		</Component>
+		<Component typeId="Transform">
+			<translation type="vec3">0.000000,0.000000,-0.850000</translation>
+			<rotation type="vec3">0.000000,0.000000,0.000000</rotation>
+			<scale type="vec3">1.000000,1.000000,1.000000</scale>
+		</Component>
+		<Component typeId="StaticMesh">
+			<mesh type="asset">0,37314080891006766</mesh>
+			<material type="asset">2,37314269018342713</material>
+		</Component>
+	</Entity>
+	<Entity>
+		<Component typeId="EditorInfo">
+			<name type="string">SouthWall</name>
+			<isMutable type="bool">false</isMutable>
+		</Component>
+		<Component typeId="Transform">
+			<translation type="vec3">0.000000,-3.000000,-33.000000</translation>
+			<rotation type="vec3">90.000000,0.000000,0.000000</rotation>
+			<scale type="vec3">1.000000,1.000000,1.000000</scale>
+		</Component>
+		<Component typeId="StaticMesh">
+			<mesh type="asset">0,37310013715408072</mesh>
+			<material type="asset">2,37322288106903960</material>
+		</Component>
+	</Entity>
+	<Entity>
+		<Component typeId="EditorInfo">
+			<name type="string">NorthWall</name>
+			<isMutable type="bool">false</isMutable>
+		</Component>
+		<Component typeId="Transform">
+			<translation type="vec3">0.000000,25.000000,-33.000000</translation>
+			<rotation type="vec3">90.000000,0.000000,0.000000</rotation>
+			<scale type="vec3">1.000000,1.000000,1.000000</scale>
+		</Component>
+		<Component typeId="StaticMesh">
+			<mesh type="asset">0,37310013715408072</mesh>
+			<material type="asset">2,37322288106903960</material>
+		</Component>
+	</Entity>
+	<Entity>
+		<Component typeId="EditorInfo">
+			<name type="string">EastWall</name>
+			<isMutable type="bool">false</isMutable>
+		</Component>
+		<Component typeId="Transform">
+			<translation type="vec3">15.000000,0.000000,-33.000000</translation>
+			<rotation type="vec3">90.000000,0.000000,90.000000</rotation>
+			<scale type="vec3">1.000000,1.000000,1.000000</scale>
+		</Component>
+		<Component typeId="StaticMesh">
+			<mesh type="asset">0,37310013715408072</mesh>
+			<material type="asset">2,37322288106903960</material>
+		</Component>
+	</Entity>
+	<Entity>
+		<Component typeId="EditorInfo">
+			<name type="string">WestWall</name>
+			<isMutable type="bool">false</isMutable>
+		</Component>
+		<Component typeId="Transform">
+			<translation type="vec3">-15.000000,0.000000,-33.000000</translation>
+			<rotation type="vec3">90.000000,0.000000,90.000000</rotation>
+			<scale type="vec3">1.000000,1.000000,1.000000</scale>
+		</Component>
+		<Component typeId="StaticMesh">
+			<mesh type="asset">0,37310013715408072</mesh>
+			<material type="asset">2,37322288106903960</material>
+		</Component>
+	</Entity>
+	<Entity>
+		<Component typeId="EditorInfo">
+			<name type="string">DroneSpawnerBack</name>
 			<isMutable type="bool">true</isMutable>
 		</Component>
 		<Component typeId="Transform">
-			<translation type="vec3">32.040501,-93.318550,0.000000</translation>
-			<rotation type="vec3">-13.999996,0.000000,101.250000</rotation>
-			<scale type="vec3">1.000000,1.000000,1.000000</scale>
+			<translation type="vec3">12.000000,-2.500000,2.000000</translation>
+			<rotation type="vec3">0.000000,0.000000,0.000000</rotation>
+			<scale type="vec3">1.000000,0.200000,1.000000</scale>
 		</Component>
-		<Component typeId="Camera">
-			<forwardVector type="vec3">0.951652,-0.189295,0.241922</forwardVector>
-			<rightVector type="vec3">-0.195090,-0.980785,0.000000</rightVector>
-			<nearPlane type="float">0.100000</nearPlane>
-			<upVector type="vec3">-0.237273,0.047197,0.970296</upVector>
-			<farPlane type="float">1000.000000</farPlane>
-			<aspectRatio type="float">1.777778</aspectRatio>
-			<fov type="float">60.000000</fov>
-			<dirty type="bool">false</dirty>
+		<Component typeId="DroneSpawner">
+			<spawnCooldown type="float">2.000000</spawnCooldown>
+			<currentTimer type="float">2.000000</currentTimer>
 		</Component>
-		<Component typeId="DirectionLight">
-			<lightColor type="vec3">1.000000,1.000000,1.000000</lightColor>
-			<diffuseIntensity type="float">0.960000</diffuseIntensity>
-			<direction type="vec3">-1.000000,1.000000,-1.000000</direction>
-			<ambientIntensity type="float">0.190000</ambientIntensity>
-			<rimPower type="float">3.400000</rimPower>
+		<Component typeId="StaticMesh">
+			<mesh type="asset">0,0</mesh>
+			<material type="asset">2,0</material>
 		</Component>
-		<Component typeId="Gun">
-			<reloadTimer type="float">0.000000</reloadTimer>
-			<reloadTime type="float">2.000000</reloadTime>
-			<magSize type="UNKNOWN">12</magSize>
-			<damage type="float">20.000000</damage>
-			<currentMagSize type="UNKNOWN">0</currentMagSize>
+	</Entity>
+	<Entity>
+		<Component typeId="EditorInfo">
+			<name type="string">DroneSpawnnerFront</name>
+			<isMutable type="bool">true</isMutable>
 		</Component>
-		<Component typeId="PlayerController">
-			<speed type="float">0.125000</speed>
+		<Component typeId="Transform">
+			<translation type="vec3">0.000000,24.500000,2.000000</translation>
+			<rotation type="vec3">0.000000,0.000000,0.000000</rotation>
+			<scale type="vec3">1.000000,0.200000,1.000000</scale>
+		</Component>
+		<Component typeId="DroneSpawner">
+			<spawnCooldown type="float">2.000000</spawnCooldown>
+			<currentTimer type="float">2.000000</currentTimer>
+		</Component>
+		<Component typeId="StaticMesh">
+			<mesh type="asset">0,0</mesh>
+			<material type="asset">2,0</material>
 		</Component>
 	</Entity>
 </ScarletScene>

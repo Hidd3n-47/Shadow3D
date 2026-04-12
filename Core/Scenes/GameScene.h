@@ -15,7 +15,6 @@
 #include <ScarletCoreEcs/Components/EditorInfo.h>
 #endif // DEV_CONFIGURATION.
 
-#include <iostream>
 #include <ScarletCoreEcs/Components/Camera.h>
 #include <ScarletCoreEcs/Components/Transform.h>
 #include <ScarletCoreEcs/Components/StaticMesh.h>
@@ -40,6 +39,8 @@ enum class GameCollisionLayers : uint8
 class GameScene : public ScarlEnt::Scene
 {
 public:
+    using BulletEntity = ScarlEnt::EntityHandle<Scarlet::Component::Transform, Scarlet::Component::StaticMesh, Scarlet::Component::SphereCollider, Scarlet::Component::Bullet>;
+
     inline GameScene(const std::string_view friendlyName) : Scene(friendlyName) { }
 
     inline void Init() override final
@@ -104,13 +105,12 @@ public:
             if (gun.reloadTimer > 0.0f)
             {
                 // We are reloading.
-                gun.reloadTimer -= static_cast<float>(Scarlet::Time::GetFixedFrameDelta());
+                gun.reloadTimer -= static_cast<float>(Scarlet::Time::GetFrameDelta());
 
                 if (gun.reloadTimer <= 0.0f)
                 {
                     gun.reloadTimer    = 0.0f;
                     gun.currentMagSize = gun.magSize;
-                    std::cout << "Reload Completed" << std::endl;
                 }
 
                 return;
@@ -119,7 +119,6 @@ public:
             if (Scarlet::InputManager::IsKeyPressed(Scarlet::KeyCode::KEY_R))
             {
                 gun.reloadTimer = gun.reloadTime;
-                std::cout << "Reloading..." << std::endl;
                 return;
             }
 
@@ -127,7 +126,6 @@ public:
             {
                 return;
             }
-            std::cout << "Shooting... " << gun.currentMagSize << std::endl;
 
             --gun.currentMagSize;
 
@@ -145,8 +143,16 @@ public:
             b.damage    = gun.damage;
             b.direction = camera.forwardVector;
 
-            (void)AddEntity<Scarlet::Component::Transform, Scarlet::Component::StaticMesh, Scarlet::Component::SphereCollider, Scarlet::Component::Bullet>
+            BulletEntity entity = AddEntity<Scarlet::Component::Transform, Scarlet::Component::StaticMesh, Scarlet::Component::SphereCollider, Scarlet::Component::Bullet>
                         (std::move(t), std::move(sm), std::move(sphere), std::move(b));
+
+            entity.GetComponent<Scarlet::Component::SphereCollider>().onCollisionCallback = [entity](const Scarlet::Component::SphereCollider&) mutable
+            {
+                if (entity.IsValid())
+                {
+                    entity.DestroyEntity();
+                }
+            };
         };
 
         auto MoveDroneSystem = [&](Scarlet::Component::Transform& transform, const Scarlet::Component::DroneController& controller)
@@ -190,13 +196,16 @@ public:
                               (std::move(t), std::move(sm), std::move(dc), std::move(sphere), std::move(hp));
 
                 Scarlet::Component::SphereCollider& sphereComp = entity.GetComponent<Scarlet::Component::SphereCollider>();
-                sphereComp.onCollisionCallback = [entity] (const uint32 otherLayer) mutable
+                sphereComp.onCollisionCallback = [&, entity] (const Scarlet::Component::SphereCollider& other) mutable
                 {
-                    if (otherLayer == static_cast<uint32>(GameCollisionLayers::BULLET))
+                    if (other.layer == static_cast<uint32>(GameCollisionLayers::BULLET))
                     {
                         Scarlet::Component::Health& health = entity.GetComponent<Scarlet::Component::Health>();
-                        health.health -= 20.0f;
-                        std::cout << entity.GetRuntimeId() << " damaged => " << health.health << std::endl;
+
+                        BulletEntity* bullet     = dynamic_cast<BulletEntity*>(GetIEntityHandle(other.GetEntityUniqueId()));
+                        const float bulletDamage = bullet->GetComponent<Scarlet::Component::Bullet>().damage;
+
+                        health.health -= bulletDamage;
                         if (health.health <= 0.0f && health.onHealthReachZeroCallback)
                         {
                             health.onHealthReachZeroCallback();
@@ -207,8 +216,6 @@ public:
                 Scarlet::Component::Health& healthComp = entity.GetComponent<Scarlet::Component::Health>();
                 healthComp.onHealthReachZeroCallback = [entity]() mutable
                 {
-                    auto h = entity.GetComponent<Scarlet::Component::Health>();
-                    std::cout << entity.GetRuntimeId() << " destroyed => " << h.health << std::endl;
                     if (entity.IsValid())
                     {
                         entity.DestroyEntity();
@@ -219,8 +226,18 @@ public:
             }
         };
 
-        auto MoveBulletSystem = [&](Scarlet::Component::Transform& transform, const Scarlet::Component::Bullet& bullet){
+        auto MoveBulletSystem = [&](Scarlet::Component::Transform& transform, Scarlet::Component::Bullet& bullet) 
+        {
             transform.translation += bullet.direction * bullet.speed;
+            bullet.lifetime       -= static_cast<float>(Scarlet::Time::GetFixedFrameDelta());
+
+            if (bullet.lifetime <= 0)
+            {
+                if (BulletEntity* entity = dynamic_cast<BulletEntity*>(GetIEntityHandle(bullet.GetEntityUniqueId())); entity->IsValid())
+                {
+                    entity->DestroyEntity();
+                }
+            }
         };
 
         RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::Camera, Scarlet::Component::PlayerController>(PlayerControllerSystem);
@@ -228,7 +245,7 @@ public:
         RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::DroneSpawner>(SpawnDroneSystem);
         RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::Bullet>(MoveBulletSystem);
 
-        RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::Camera, Scarlet::Component::Gun>(PlayerGunSystem);
+        RegisterSystem<Scarlet::Component::Transform, Scarlet::Component::Camera, Scarlet::Component::Gun>(PlayerGunSystem);
     }
 
     inline void Destroy() override

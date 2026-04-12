@@ -12,6 +12,13 @@ namespace Scarlet::Component
 void Bullet::GenerateProperties()
 {
     mProperties.clear();
+    mProperties["lifetime"] = ScarlEnt::Property {
+        ScarlEnt::PropertyType::FLOAT,
+        ScarlEnt::Registry::Instance().GetOrRegisterComponentId<Bullet>(),
+        [this] { return ReflectType::GetStringFromValue(this->lifetime); },
+        [this](const std::string_view& stringValue) { ReflectType::SetValueFromString(this->lifetime, stringValue); }
+    };
+
     mProperties["damage"] = ScarlEnt::Property {
         ScarlEnt::PropertyType::FLOAT,
         ScarlEnt::Registry::Instance().GetOrRegisterComponentId<Bullet>(),

@@ -97,6 +97,28 @@ public:
             transform.translation += camera.rightVector * horizontalDirection * controller.speed
                                   -  forwardVector      * forwardDirection    * controller.speed;
 
+            // Fix position to be within the wall bounds.
+            // Western wall.
+            if (const float delta = controller.xCenterPosition - controller.xHalfWidth + controller.paddingFromWall - transform.translation.x; delta > 0)
+            {
+                transform.translation.x += delta;
+            }
+            // Eastern wall.
+            if (const float delta = controller.xCenterPosition + controller.xHalfWidth - controller.paddingFromWall - transform.translation.x; delta < 0)
+            {
+                transform.translation.x += delta;
+            }
+            // Northern wall.
+            if (const float delta = controller.yCenterPosition + controller.yHalfWidth - controller.paddingFromWall - transform.translation.y; delta < 0)
+            {
+                transform.translation.y += delta;
+            }
+            // Southern wall.
+            if (const float delta = controller.yCenterPosition - controller.yHalfWidth + controller.paddingFromWall - transform.translation.y; delta > 0)
+            {
+                transform.translation.y += delta;
+            }
+
             camera.dirty = true;
         };
 

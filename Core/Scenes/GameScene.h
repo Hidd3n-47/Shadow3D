@@ -27,6 +27,7 @@
 #include "Components/DroneSpawner.h"
 #include "Components/DroneController.h"
 #include "Components/PlayerController.h"
+#include "Components/WaveManager.h"
 
 enum class GameCollisionLayers : uint8
 {
@@ -189,65 +190,6 @@ public:
             transform.rotation     = Scarlet::Math::Vec3{ pitch, 0.0f, yaw };
         };
 
-        auto SpawnDroneSystem = [&] (const Scarlet::Component::Transform& transform, Scarlet::Component::DroneSpawner& droneSpawner)
-        {
-            droneSpawner.currentTimer -= static_cast<float>(Scarlet::Time::GetFixedFrameDelta());
-
-            if (droneSpawner.currentTimer <= 0.0f)
-            {
-                Scarlet::Component::Transform t{};
-                t.translation = transform.translation;
-                t.rotation    = Scarlet::Math::Vec3{ 0.0f };
-                t.scale       = Scarlet::Math::Vec3{ 0.5f };
-
-                Scarlet::Component::StaticMesh sm;
-                sm.mesh     = Scarlet::AssetRef{ Scarlet::AssetType::MESH    , 34764804665973553 };
-                sm.material = Scarlet::AssetRef{ Scarlet::AssetType::MATERIAL, 34775035533044079 };
-
-                Scarlet::Component::DroneController dc;
-                dc.speed = 0.1f;
-
-                Scarlet::Component::SphereCollider sphere;
-                sphere.radius = 1.25f;
-                sphere.layer  = static_cast<uint32>(GameCollisionLayers::DRONE);
-
-                Scarlet::Component::Health hp{};
-
-                auto entity = AddEntity<Scarlet::Component::Transform, Scarlet::Component::StaticMesh, Scarlet::Component::DroneController,
-                                        Scarlet::Component::SphereCollider, Scarlet::Component::Health>
-                              (std::move(t), std::move(sm), std::move(dc), std::move(sphere), std::move(hp));
-
-                Scarlet::Component::SphereCollider& sphereComp = entity.GetComponent<Scarlet::Component::SphereCollider>();
-                sphereComp.onCollisionCallback = [&, entity] (const Scarlet::Component::SphereCollider& other) mutable
-                {
-                    if (other.layer == static_cast<uint32>(GameCollisionLayers::BULLET))
-                    {
-                        Scarlet::Component::Health& health = entity.GetComponent<Scarlet::Component::Health>();
-
-                        BulletEntity* bullet     = dynamic_cast<BulletEntity*>(GetIEntityHandle(other.GetEntityUniqueId()));
-                        const float bulletDamage = bullet->GetComponent<Scarlet::Component::Bullet>().damage;
-
-                        health.health -= bulletDamage;
-                        if (health.health <= 0.0f && health.onHealthReachZeroCallback)
-                        {
-                            health.onHealthReachZeroCallback();
-                        }
-                    }
-                };
-
-                Scarlet::Component::Health& healthComp = entity.GetComponent<Scarlet::Component::Health>();
-                healthComp.onHealthReachZeroCallback = [entity]() mutable
-                {
-                    if (entity.IsValid())
-                    {
-                        entity.DestroyEntity();
-                    }
-                };
-
-                droneSpawner.currentTimer = droneSpawner.spawnCooldown;
-            }
-        };
-
         auto MoveBulletSystem = [&](Scarlet::Component::Transform& transform, Scarlet::Component::Bullet& bullet) 
         {
             transform.translation += bullet.direction * bullet.speed;
@@ -262,12 +204,108 @@ public:
             }
         };
 
+        auto WaveManagerSystem = [&](Scarlet::Component::WaveManager& waveManager)
+        {
+            waveManager.currentTimer -= static_cast<float>(Scarlet::Time::GetFrameDelta());
+
+            // All the enemies have been spawned, therefore look if they have been killed and a new wave needs to start.
+            if (waveManager.numberOfSpawnedEnemies == waveManager.numberOfEnemiesToSpawn)
+            {
+                const auto drones = GetComponents<Scarlet::Component::DroneController>();
+
+                // All drones are killed, thus start new wave.
+                if (drones.empty())
+                {
+                    ++waveManager.wave;
+
+                    waveManager.numberOfEnemiesToSpawn = static_cast<uint32>(static_cast<float>(waveManager.numberOfEnemiesToSpawn) * 1.5f);
+
+                    waveManager.startingEnemyHealth *= 1.3f;
+                    waveManager.startingEnemySpeed = std::min(waveManager.startingEnemySpeed + 0.01f, waveManager.maxEnemySpeed);
+
+                    waveManager.currentTimer = waveManager.timeBetweenWaves + waveManager.timeBetweenSpawns;
+                    waveManager.numberOfSpawnedEnemies = 0;
+                }
+
+                return;
+            }
+
+            // All the enemies haven't been spawned, so spawn if the timer has elapsed.
+            if (waveManager.currentTimer > 0.0f)
+            {
+                return;
+            }
+
+            if (GetComponents<Scarlet::Component::DroneController>().size() == waveManager.maxNumberOfEnemies)
+            {
+                // The maximum number of enemies have been spawned in, wait until they are reduced to spawn in a new enemy.
+                return;
+            }
+
+            // Spawn Enemy.
+            ++waveManager.numberOfSpawnedEnemies;
+            waveManager.currentTimer = waveManager.timeBetweenSpawns;
+
+            const auto spawnPoints = GetComponents<Scarlet::Component::Transform, Scarlet::Component::DroneSpawner>();
+            const Scarlet::Math::Vec3 spawnPosition = std::get<Scarlet::Component::Transform&>(spawnPoints[rand() % spawnPoints.size()]).translation;
+
+            Scarlet::Component::Transform t{};
+            t.translation = spawnPosition;
+            t.rotation    = Scarlet::Math::Vec3{ 0.0f };
+            t.scale       = Scarlet::Math::Vec3{ 0.5f };
+
+            Scarlet::Component::StaticMesh sm;
+            sm.mesh     = Scarlet::AssetRef{ Scarlet::AssetType::MESH    , 34764804665973553 };
+            sm.material = Scarlet::AssetRef{ Scarlet::AssetType::MATERIAL, 34775035533044079 };
+
+            Scarlet::Component::DroneController dc;
+            dc.speed = waveManager.startingEnemySpeed;
+
+            Scarlet::Component::SphereCollider sphere;
+            sphere.radius = 1.25f;
+            sphere.layer  = static_cast<uint32>(GameCollisionLayers::DRONE);
+
+            Scarlet::Component::Health hp{};
+            hp.health = waveManager.startingEnemyHealth;
+
+            auto entity = AddEntity<Scarlet::Component::Transform, Scarlet::Component::StaticMesh, Scarlet::Component::DroneController,
+                Scarlet::Component::SphereCollider, Scarlet::Component::Health>
+                (std::move(t), std::move(sm), std::move(dc), std::move(sphere), std::move(hp));
+
+            Scarlet::Component::SphereCollider& sphereComp = entity.GetComponent<Scarlet::Component::SphereCollider>();
+            sphereComp.onCollisionCallback = [&, entity](const Scarlet::Component::SphereCollider& other) mutable
+            {
+                if (other.layer == static_cast<uint32>(GameCollisionLayers::BULLET))
+                {
+                    Scarlet::Component::Health& health = entity.GetComponent<Scarlet::Component::Health>();
+
+                    BulletEntity* bullet = dynamic_cast<BulletEntity*>(GetIEntityHandle(other.GetEntityUniqueId()));
+                    const float bulletDamage = bullet->GetComponent<Scarlet::Component::Bullet>().damage;
+
+                    health.health -= bulletDamage;
+                    if (health.health <= 0.0f && health.onHealthReachZeroCallback)
+                    {
+                        health.onHealthReachZeroCallback();
+                    }
+                }
+            };
+
+            Scarlet::Component::Health& healthComp = entity.GetComponent<Scarlet::Component::Health>();
+            healthComp.onHealthReachZeroCallback = [entity]() mutable
+            {
+                if (entity.IsValid())
+                {
+                    entity.DestroyEntity();
+                }
+            };
+        };
+
         RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::Camera, Scarlet::Component::PlayerController>(PlayerControllerSystem);
         RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::DroneController>(MoveDroneSystem);
-        RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::DroneSpawner>(SpawnDroneSystem);
         RegisterFixedUpdateSystem<Scarlet::Component::Transform, Scarlet::Component::Bullet>(MoveBulletSystem);
 
         RegisterSystem<Scarlet::Component::Transform, Scarlet::Component::Camera, Scarlet::Component::Gun>(PlayerGunSystem);
+        RegisterSystem<Scarlet::Component::WaveManager>(WaveManagerSystem);
     }
 
     inline void Destroy() override

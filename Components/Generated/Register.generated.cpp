@@ -12,6 +12,7 @@ void Register::RegisterComponents()
     RegisterComponentTypeAndFunctionPointer<Scarlet::Component::Gun>(registry);
     RegisterComponentTypeAndFunctionPointer<Scarlet::Component::Health>(registry);
     RegisterComponentTypeAndFunctionPointer<Scarlet::Component::PlayerController>(registry);
+    RegisterComponentTypeAndFunctionPointer<Scarlet::Component::WaveManager>(registry);
 
 }
 
@@ -25,6 +26,7 @@ void Register::UnregisterComponents()
     UnregisterComponentType<Scarlet::Component::Gun>(registry);
     UnregisterComponentType<Scarlet::Component::Health>(registry);
     UnregisterComponentType<Scarlet::Component::PlayerController>(registry);
+    UnregisterComponentType<Scarlet::Component::WaveManager>(registry);
 
 }
 

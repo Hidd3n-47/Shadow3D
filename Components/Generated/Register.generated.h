@@ -9,6 +9,7 @@
 #include "Components/Gun.h"
 #include "Components/Health.h"
 #include "Components/PlayerController.h"
+#include "Components/PlayerDead.h"
 #include "Components/WaveManager.h"
 
 

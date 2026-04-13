@@ -27,6 +27,7 @@
 #include "Components/DroneSpawner.h"
 #include "Components/DroneController.h"
 #include "Components/PlayerController.h"
+#include "Components/PlayerDead.h"
 #include "Components/WaveManager.h"
 
 enum class GameCollisionLayers : uint8
@@ -59,13 +60,20 @@ public:
         mPlayerEntity.AddComponent<Scarlet::Component::Camera>();
         mPlayerEntity.AddComponent<Scarlet::Component::DirectionLight>();
         mPlayerEntity.AddComponent<Scarlet::Component::Gun>();
+        mPlayerEntity.AddComponent<Scarlet::Component::Health>().health = 100.0f;
         Scarlet::Component::PlayerController& pc = mPlayerEntity.AddComponent<Scarlet::Component::PlayerController>();
         pc.speed = 0.125f;
 
         SetCameraEntityHandle(&mPlayerEntity);
 
-        auto PlayerControllerSystem = [] (Scarlet::Component::Transform& transform, Scarlet::Component::Camera& camera, const Scarlet::Component::PlayerController& controller)
+        auto PlayerControllerSystem = [&] (Scarlet::Component::Transform& transform, Scarlet::Component::Camera& camera, const Scarlet::Component::PlayerController& controller)
         {
+            if (dynamic_cast<ScarlEnt::MutableEntityHandle*>(GetIEntityHandle(transform.GetEntityUniqueId()))->HasComponent<Scarlet::Component::PlayerDead>())
+            {
+                // Don't allow for player movement if the player is dead.
+                return;
+            }
+
             Scarlet::Math::Vec3 horizontalDirection = { }, forwardDirection = { };
 
             if (Scarlet::InputManager::IsKeyDown(Scarlet::KeyCode::KEY_W))
@@ -178,8 +186,14 @@ public:
             };
         };
 
-        auto MoveDroneSystem = [&](Scarlet::Component::Transform& transform, const Scarlet::Component::DroneController& controller)
+        auto MoveDroneSystem = [&](Scarlet::Component::Transform& transform, Scarlet::Component::DroneController& controller)
         {
+            if (mPlayerEntity.HasComponent<Scarlet::Component::PlayerDead>())
+            {
+                // Don't move th drones if the player is dead.
+                return;
+            }
+
             const Scarlet::Math::Vec3 playerPosition = mPlayerEntity.GetComponent<Scarlet::Component::Transform>().translation;
             const Scarlet::Math::Vec3 direction      = Scarlet::Math::Normalize(playerPosition - transform.translation);
 
@@ -188,6 +202,23 @@ public:
 
             transform.translation += direction * controller.speed;
             transform.rotation     = Scarlet::Math::Vec3{ pitch, 0.0f, yaw };
+
+            // Check if the drone is close enough to the player to damage them.
+            const Scarlet::Math::Vec2 xyPosition{ transform.translation - playerPosition };
+            constexpr float distanceToPlayerSquared = 1.0f * 1.0f;
+
+            controller.damagePlayerCooldownTimer -= static_cast<float>(Scarlet::Time::GetFixedFrameDelta());
+
+            if (controller.damagePlayerCooldownTimer <= 0.0f && Scarlet::Math::MagnitudeSquared(xyPosition) <= distanceToPlayerSquared)
+            {
+                controller.damagePlayerCooldownTimer = controller.damagePlayerCooldown;
+                Scarlet::Component::Health& playerHealth = mPlayerEntity.GetComponent<Scarlet::Component::Health>();
+                playerHealth.health -= 20.0f;
+                if (playerHealth.health <= 0.0f)
+                {
+                    mPlayerEntity.AddComponent<Scarlet::Component::PlayerDead>();
+                }
+            }
         };
 
         auto MoveBulletSystem = [&](Scarlet::Component::Transform& transform, Scarlet::Component::Bullet& bullet) 

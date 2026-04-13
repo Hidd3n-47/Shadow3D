@@ -18,6 +18,20 @@ void DroneController::GenerateProperties()
         [this] { return ReflectType::GetStringFromValue(this->speed); },
         [this](const std::string_view& stringValue) { ReflectType::SetValueFromString(this->speed, stringValue); }
     };
+
+    mProperties["damagePlayerCooldown"] = ScarlEnt::Property {
+        ScarlEnt::PropertyType::FLOAT,
+        ScarlEnt::Registry::Instance().GetOrRegisterComponentId<DroneController>(),
+        [this] { return ReflectType::GetStringFromValue(this->damagePlayerCooldown); },
+        [this](const std::string_view& stringValue) { ReflectType::SetValueFromString(this->damagePlayerCooldown, stringValue); }
+    };
+
+    mProperties["damagePlayerCooldownTimer"] = ScarlEnt::Property {
+        ScarlEnt::PropertyType::FLOAT,
+        ScarlEnt::Registry::Instance().GetOrRegisterComponentId<DroneController>(),
+        [this] { return ReflectType::GetStringFromValue(this->damagePlayerCooldownTimer); },
+        [this](const std::string_view& stringValue) { ReflectType::SetValueFromString(this->damagePlayerCooldownTimer, stringValue); }
+    };
 };
 
 #endif // DEV_CONFIGURATION.

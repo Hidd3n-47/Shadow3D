@@ -108,7 +108,7 @@
 	<Entity>
 		<Component typeId="EditorInfo">
 			<name type="string">DroneSpawnerBack</name>
-			<isMutable type="bool">true</isMutable>
+			<isMutable type="bool">false</isMutable>
 		</Component>
 		<Component typeId="Transform">
 			<translation type="vec3">12.000000,-2.500000,2.000000</translation>
@@ -124,7 +124,7 @@
 	<Entity>
 		<Component typeId="EditorInfo">
 			<name type="string">DroneSpawnnerFront</name>
-			<isMutable type="bool">true</isMutable>
+			<isMutable type="bool">false</isMutable>
 		</Component>
 		<Component typeId="Transform">
 			<translation type="vec3">0.000000,24.500000,2.000000</translation>
@@ -148,10 +148,10 @@
 			<scale type="vec3">1.000000,1.000000,1.000000</scale>
 		</Component>
 		<Component typeId="WaveManager">
-			<wave type="UNKNOWN">0</wave>
-			<numberOfEnemiesToSpawn type="UNKNOWN">5</numberOfEnemiesToSpawn>
-			<numberOfSpawnedEnemies type="UNKNOWN">0</numberOfSpawnedEnemies>
-			<maxNumberOfEnemies type="UNKNOWN">30</maxNumberOfEnemies>
+			<wave type="uint32">0</wave>
+			<numberOfEnemiesToSpawn type="uint32">5</numberOfEnemiesToSpawn>
+			<numberOfSpawnedEnemies type="uint32">0</numberOfSpawnedEnemies>
+			<maxNumberOfEnemies type="uint32">30</maxNumberOfEnemies>
 			<maxEnemySpeed type="float">0.100000</maxEnemySpeed>
 			<startingEnemySpeed type="float">0.020000</startingEnemySpeed>
 			<timeBetweenWaves type="float">2.000000</timeBetweenWaves>

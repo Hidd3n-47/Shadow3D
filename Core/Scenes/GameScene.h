@@ -75,23 +75,23 @@ public:
                 return;
             }
 
-            Scarlet::Math::Vec3 horizontalDirection = { }, forwardDirection = { };
+            Scarlet::Math::Vec3 direction{ 0.0f };
 
             if (Scarlet::InputManager::IsKeyDown(Scarlet::KeyCode::KEY_W))
             {
-                forwardDirection += -1.0f;
+                direction.y += -1.0f;
             }
             if (Scarlet::InputManager::IsKeyDown(Scarlet::KeyCode::KEY_S))
             {
-                forwardDirection += 1.0f;
+                direction.y += 1.0f;
             }
             if (Scarlet::InputManager::IsKeyDown(Scarlet::KeyCode::KEY_A))
             {
-                horizontalDirection += -1.0f;
+                direction.x += -1.0f;
             }
             if (Scarlet::InputManager::IsKeyDown(Scarlet::KeyCode::KEY_D))
             {
-                horizontalDirection += 1.0f;
+                direction.x += 1.0f;
             }
 
             constexpr float SPEED_SCALING_FACTOR_YAW   = 0.45f;
@@ -99,13 +99,16 @@ public:
 
             const Scarlet::Math::Vec2 moveDelta = Scarlet::InputManager::GetMouseDeltaThisFrame();
 
+            const float magnitudeSquared = Scarlet::Math::MagnitudeSquared(direction);
+            direction = magnitudeSquared > 0.0f ? direction / Scarlet::Math::Sqrt(magnitudeSquared) : direction;
+
             const Scarlet::Math::Vec3 forwardVector = Scarlet::Math::Normalize(Scarlet::Math::Vec3{ camera.forwardVector.x, camera.forwardVector.y, 0.0f });
 
             transform.rotation.z += -moveDelta.x * SPEED_SCALING_FACTOR_YAW;
             transform.rotation.x += -moveDelta.y * SPEED_SCALING_FACTOR_PITCH;
 
-            transform.translation += camera.rightVector * horizontalDirection * controller.speed
-                                  -  forwardVector      * forwardDirection    * controller.speed;
+            transform.translation += camera.rightVector * direction.x * controller.speed
+                                  -  forwardVector      * direction.y * controller.speed;
 
             // Fix position to be within the wall bounds.
             // Western wall.

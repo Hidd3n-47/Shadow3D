@@ -5,9 +5,8 @@
 #include <ScarletMath/Trig.h>
 
 #include <ScarletEngine/Core/Time.h>
-
 #include <ScarletEngine/Core/Engine.h>
-
+#include <ScarletEngine/Core/Window/Window.h>
 #include <ScarletEngine/Core/Input/KeyCodes.h>
 #include <ScarletEngine/Core/Input/InputManager.h>
 
@@ -47,6 +46,8 @@ public:
 
     inline void Init() override final
     {
+        Scarlet::Engine::Instance().GetMainWindow()->SetShowCursor(false);
+
         // Register the engine systems. Leave this for default engine systems such as rendering, physics etc..
         Scarlet::Engine::Instance().RegisterEngineSystems(Scarlet::WeakHandle<Scene>{ this });
 

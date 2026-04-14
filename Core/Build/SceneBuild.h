@@ -24,15 +24,16 @@ inline void InitGameScene()
     
     WeakHandle<ScarlEnt::Scene> scene = ScarlEnt::Registry::Instance().GetScene("GameScene");
 
-    {
-        ScarlEnt::MutableEntityHandle ent = scene->AddMutableEntity();
-        auto& Transform = ent.AddComponent<Component::Transform>();
+   {
+        Component::Transform Transform{};
         Transform.translation = Math::Vec3{ 0.000000,35.000000,-1.500000 };
         Transform.rotation = Math::Vec3{ 0.000000,0.000000,0.000000 };
         Transform.scale = Math::Vec3{ 1.000000,1.000000,1.000000 };
-        auto& StaticMesh = ent.AddComponent<Component::StaticMesh>();
+        Component::StaticMesh StaticMesh{};
         StaticMesh.mesh = AssetRef{ 0,37310013715408072 };
         StaticMesh.material = AssetRef{ 2,33630958529845530 };
+
+        scene->AddEntity<Component::Transform, Component::StaticMesh>(std::move(Transform), std::move(StaticMesh));
     }
 
    {
@@ -108,28 +109,30 @@ inline void InitGameScene()
         scene->AddEntity<Component::Transform, Component::StaticMesh>(std::move(Transform), std::move(StaticMesh));
     }
 
-    {
-        ScarlEnt::MutableEntityHandle ent = scene->AddMutableEntity();
-        auto& Transform = ent.AddComponent<Component::Transform>();
+   {
+        Component::Transform Transform{};
         Transform.translation = Math::Vec3{ 12.000000,-2.500000,2.000000 };
         Transform.rotation = Math::Vec3{ 0.000000,0.000000,0.000000 };
         Transform.scale = Math::Vec3{ 1.000000,0.200000,1.000000 };
-        auto& DroneSpawner = ent.AddComponent<Component::DroneSpawner>();
-        auto& StaticMesh = ent.AddComponent<Component::StaticMesh>();
+        Component::DroneSpawner DroneSpawner{};
+        Component::StaticMesh StaticMesh{};
         StaticMesh.mesh = AssetRef{ 0,0 };
         StaticMesh.material = AssetRef{ 2,0 };
+
+        scene->AddEntity<Component::Transform, Component::DroneSpawner, Component::StaticMesh>(std::move(Transform), std::move(DroneSpawner), std::move(StaticMesh));
     }
 
-    {
-        ScarlEnt::MutableEntityHandle ent = scene->AddMutableEntity();
-        auto& Transform = ent.AddComponent<Component::Transform>();
+   {
+        Component::Transform Transform{};
         Transform.translation = Math::Vec3{ 0.000000,24.500000,2.000000 };
         Transform.rotation = Math::Vec3{ 0.000000,0.000000,0.000000 };
         Transform.scale = Math::Vec3{ 1.000000,0.200000,1.000000 };
-        auto& DroneSpawner = ent.AddComponent<Component::DroneSpawner>();
-        auto& StaticMesh = ent.AddComponent<Component::StaticMesh>();
+        Component::DroneSpawner DroneSpawner{};
+        Component::StaticMesh StaticMesh{};
         StaticMesh.mesh = AssetRef{ 0,0 };
         StaticMesh.material = AssetRef{ 2,0 };
+
+        scene->AddEntity<Component::Transform, Component::DroneSpawner, Component::StaticMesh>(std::move(Transform), std::move(DroneSpawner), std::move(StaticMesh));
     }
 
    {

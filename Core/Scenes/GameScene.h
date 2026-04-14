@@ -107,6 +107,8 @@ public:
             transform.rotation.z += -moveDelta.x * SPEED_SCALING_FACTOR_YAW;
             transform.rotation.x += -moveDelta.y * SPEED_SCALING_FACTOR_PITCH;
 
+            transform.rotation.x = transform.rotation.x > 0.0f ? std::min(transform.rotation.x, 45.0f) : std::max(transform.rotation.x, -60.0f);
+
             transform.translation += camera.rightVector * direction.x * controller.speed
                                   -  forwardVector      * direction.y * controller.speed;
 
